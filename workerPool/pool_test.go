@@ -47,3 +47,23 @@ func TestExecuteReq_WrongDelay(t *testing.T) {
 	parseReq(response, req, pool)
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 }
+
+func TestExecuteReq_WrongMethod(t *testing.T) {
+	pool := GetPoolConfig(5, 1, 10)
+	var jsonStr = []byte(`{"name":"", "delay": 20}`)
+	req, _ := http.NewRequest("PUT", "localhost:8000/work", bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+	response := executeRequest(req)
+	parseReq(response, req, pool)
+	checkResponseCode(t, http.StatusMethodNotAllowed, response.Code)
+}
+
+func TestExecuteReq_WrongDelayFormat(t *testing.T) {
+	pool := GetPoolConfig(5, 1, 10)
+	var jsonStr = []byte(`{"name":"test", "delay": "20""}`)
+	req, _ := http.NewRequest("PUT", "localhost:8000/work", bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+	response := executeRequest(req)
+	parseReq(response, req, pool)
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
