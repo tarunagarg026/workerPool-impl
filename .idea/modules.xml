@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../batcher/.idea/batcher.iml" filepath="$PROJECT_DIR$/../batcher/.idea/batcher.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/workerPool.iml" filepath="$PROJECT_DIR$/.idea/workerPool.iml" />
     </modules>
   </component>
