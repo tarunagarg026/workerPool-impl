@@ -18,6 +18,10 @@ type Pool struct {
 	Duration     time.Duration
 }
 
+type WorkerPool interface {
+	collector(workRequest WorkRequest)
+}
+
 func GetPoolConfig(noOfWorkers, numCPU int, duration time.Duration) *Pool {
 	var pool *Pool
 	getPoolData.Do(
