@@ -7,9 +7,8 @@ import (
 	"time"
 )
 
-var WorkerQueue chan WorkRequest
-var startPool sync.Once
-var getPoolData sync.Once
+var syncInitializeStartPoolVar sync.Once
+var syncGetPoolVar sync.Once
 
 type Pool struct {
 	NumOfWorkers int
@@ -22,9 +21,9 @@ type WorkerPool interface {
 	collector(workRequest WorkRequest)
 }
 
-func GetPoolConfig(noOfWorkers, numCPU int, duration time.Duration) *Pool {
+func GetPool(noOfWorkers, numCPU int, duration time.Duration) *Pool {
 	var pool *Pool
-	getPoolData.Do(
+	syncGetPoolVar.Do(
 		func() {
 			pool = &Pool{
 				WorkQueue:    make(chan WorkRequest, 100),
@@ -42,7 +41,7 @@ func (pool *Pool) collector(workRequest WorkRequest) {
 }
 
 func InitializeWorkerPool(HTTPAddr string, pool *Pool) {
-	startPool.Do(
+	syncInitializeStartPoolVar.Do(
 		func() {
 			runtime.GOMAXPROCS(pool.CPUs)
 			startDispatcher(pool)
@@ -53,8 +52,6 @@ func InitializeWorkerPool(HTTPAddr string, pool *Pool) {
 func startDispatcher(pool *Pool) {
 
 	fmt.Println("Starting the dispatcher")
-	// First, initialize the channel we are going to but the workers' work channels into.
-	WorkerQueue = make(chan WorkRequest, pool.NumOfWorkers)
 
 	// Now, create all of our workers.
 	for i := 0; i < pool.NumOfWorkers; i++ {

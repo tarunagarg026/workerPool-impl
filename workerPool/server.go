@@ -40,6 +40,24 @@ func parseReq(w http.ResponseWriter, r *http.Request, pool *Pool) error {
 	}
 	defer r.Body.Close()
 
+	err := workReq.validateRequest(w)
+	if err != nil {
+		return err
+	}
+
+	expiryTime := time.Now().Add(time.Second * pool.Duration)
+
+	// Now, we take the delay, the person's name, and expiry time to make a WorkRequest out of them.
+	work := WorkRequest{Name: workReq.Name, Delay: workReq.Delay, ExpiryTime: expiryTime}
+
+	fmt.Println("Work request queued")
+	pool.collector(work)
+	// And let the user know their work request was created.
+	w.WriteHeader(http.StatusCreated)
+	return nil
+}
+
+func (workReq *WorkRequest) validateRequest(w http.ResponseWriter) error {
 	// Get the delay.
 	delay := time.Second * workReq.Delay
 
@@ -57,15 +75,5 @@ func parseReq(w http.ResponseWriter, r *http.Request, pool *Pool) error {
 		http.Error(w, "You must specify a name.", http.StatusBadRequest)
 		return errors.New("invalid name, it should not be an empty string")
 	}
-
-	expiryTime := time.Now().Add(time.Second * pool.Duration)
-
-	// Now, we take the delay, the person's name, and expiry time to make a WorkRequest out of them.
-	work := WorkRequest{Name: name, Delay: delay, ExpiryTime: expiryTime}
-
-	fmt.Println("Work request queued")
-	pool.collector(work)
-	// And let the user know their work request was created.
-	w.WriteHeader(http.StatusCreated)
 	return nil
 }
